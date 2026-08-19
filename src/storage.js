@@ -2,22 +2,22 @@ export const STORAGE_KEY = 'ai-foundations-progress-v2';
 export const SYNC_CONFIG_KEY = 'ai-foundations-sync-config-v1';
 export const useClaudeStorage = typeof window.storage !== 'undefined';
 
-export async function saveState(state) {
+export async function saveState(key = STORAGE_KEY, state) {
   if (useClaudeStorage) {
-    const result = await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
+    const result = await window.storage.set(key, JSON.stringify(state), false);
     return result ? 'সেভ হয়েছে' : 'সেভ করা যায়নি';
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(key, JSON.stringify(state));
   return 'ব্রাউজারে সেভ হয়েছে';
 }
 
-export async function loadState() {
+export async function loadState(key = STORAGE_KEY) {
   if (useClaudeStorage) {
-    const result = await window.storage.get(STORAGE_KEY, false);
+    const result = await window.storage.get(key, false);
     const state = result && result.value ? JSON.parse(result.value) : {};
     return { state, status: 'রেডি' };
   }
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = localStorage.getItem(key);
   const state = raw ? JSON.parse(raw) : {};
   return { state, status: 'রেডি (ব্রাউজার স্টোরেজ)' };
 }
