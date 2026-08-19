@@ -8,3 +8,7 @@ body {
   justify-content: center;
   padding: 24px 12px;
 }
+
+#root {
+  min-width: 0;
+}

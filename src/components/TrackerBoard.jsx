@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { DATA } from '../data.js';
 import {
-  loadState, saveState, loadSyncConfig, saveSyncConfig,
+  STORAGE_KEY, loadState, saveState, loadSyncConfig, saveSyncConfig,
   normalizeApiUrl, pullRemote, pushRemote
 } from '../storage.js';
 import LearningCurve from './LearningCurve.jsx';
@@ -19,7 +19,7 @@ export default function TrackerBoard() {
 
   const persist = useCallback(async (nextState, cfg) => {
     try {
-      const status = await saveState(nextState);
+      const status = await saveState(STORAGE_KEY, nextState);
       setStatusText(status);
     } catch (e) {
       setStatusText('সেভ করা যায়নি');
@@ -45,7 +45,7 @@ export default function TrackerBoard() {
       const remoteHasData = data.state && Object.keys(data.state).length > 0;
       if (remoteHasData) {
         setState(data.state);
-        const status = await saveState(data.state);
+        const status = await saveState(STORAGE_KEY, data.state);
         setStatusText(status);
       } else if (mergeIfEmpty && Object.keys(currentState).length > 0) {
         await pushRemote(cfg, currentState);
@@ -60,7 +60,7 @@ export default function TrackerBoard() {
     (async () => {
       let initialState = {};
       try {
-        const result = await loadState();
+        const result = await loadState(STORAGE_KEY);
         initialState = result.state;
         setStatusText(result.status);
       } catch (e) {
@@ -125,56 +125,50 @@ export default function TrackerBoard() {
 
   if (!loaded) {
     return (
-      <div className="frame">
-        <div className="board">
-          <h1>AI ফাউন্ডেশন ট্র্যাকার</h1>
-          <p className="sub">লোড হচ্ছে...</p>
-          <div className="ledge"></div>
-        </div>
-      </div>
+      <>
+        <h1>AI ফাউন্ডেশন ট্র্যাকার</h1>
+        <p className="sub">লোড হচ্ছে...</p>
+      </>
     );
   }
 
   return (
-    <div className="frame">
-      <div className="board">
-        <h1>AI ফাউন্ডেশন ট্র্যাকার</h1>
-        <p className="sub">সাব-টপিক লেভেলে চেক করুন — প্রগ্রেস অটো-সেভ হয়</p>
+    <>
+      <h1>AI ফাউন্ডেশন ট্র্যাকার</h1>
+      <p className="sub">সাব-টপিক লেভেলে চেক করুন — প্রগ্রেস অটো-সেভ হয়</p>
 
-        <LearningCurve data={DATA} state={state} />
+      <LearningCurve data={DATA} state={state} />
 
-        <SyncPanel syncConfig={syncConfig} syncStatus={syncStatus} onConnect={onConnect} />
+      <SyncPanel syncConfig={syncConfig} syncStatus={syncStatus} onConnect={onConnect} />
 
-        <div className="filter-row">
-          <button
-            className={`filter-btn ${filterMode === 'all' ? 'active' : ''}`}
-            onClick={() => onFilter('all')}
-          >সব খোলা</button>
-          <button
-            className={`filter-btn ${filterMode === 'collapse' ? 'active' : ''}`}
-            onClick={() => onFilter('collapse')}
-          >সব বন্ধ</button>
-        </div>
-
-        <div id="sections">
-          {DATA.map(sec => (
-            <Section
-              key={sec.id}
-              sec={sec}
-              state={state}
-              collapsed={!!collapsed[sec.id]}
-              onToggleCollapse={onToggleCollapse}
-              onToggleItem={onToggleItem}
-            />
-          ))}
-        </div>
-
-        <div className="footer">
-          <span className="status">{statusText}</span>
-          <button className="reset" onClick={onReset}>রিসেট</button>
-        </div>
-        <div className="ledge"></div>
+      <div className="filter-row">
+        <button
+          className={`filter-btn ${filterMode === 'all' ? 'active' : ''}`}
+          onClick={() => onFilter('all')}
+        >সব খোলা</button>
+        <button
+          className={`filter-btn ${filterMode === 'collapse' ? 'active' : ''}`}
+          onClick={() => onFilter('collapse')}
+        >সব বন্ধ</button>
       </div>
-    </div>
+
+      <div id="sections">
+        {DATA.map(sec => (
+          <Section
+            key={sec.id}
+            sec={sec}
+            state={state}
+            collapsed={!!collapsed[sec.id]}
+            onToggleCollapse={onToggleCollapse}
+            onToggleItem={onToggleItem}
+          />
+        ))}
+      </div>
+
+      <div className="footer">
+        <span className="status">{statusText}</span>
+        <button className="reset" onClick={onReset}>রিসেট</button>
+      </div>
+    </>
   );
 }
